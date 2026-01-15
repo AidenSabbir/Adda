@@ -9,6 +9,8 @@ import Image from "next/image";
 import { ModeToggle } from "@/components/mode-toggle";
 import { CopyButton } from "@/components/copy-button";
 
+export const dynamic = "force-dynamic";
+
 export default async function ProfilePage({
     params,
 }: {

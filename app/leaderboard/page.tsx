@@ -6,6 +6,8 @@ import Link from "next/link";
 import { Trophy, Medal, Award, ArrowLeft, Flame, TrendingUp } from "lucide-react";
 import { ModeToggle } from "@/components/mode-toggle";
 
+export const dynamic = "force-dynamic";
+
 export default async function LeaderboardPage() {
     const supabase = await createClient();
 

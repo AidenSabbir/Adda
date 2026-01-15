@@ -6,6 +6,8 @@ import { ModeToggle } from "@/components/mode-toggle";
 import Link from "next/link";
 import { Trophy, Calendar, User, LogOut, ArrowRight } from "lucide-react";
 
+export const dynamic = "force-dynamic";
+
 export default async function Home() {
   const supabase = await createClient();
 
