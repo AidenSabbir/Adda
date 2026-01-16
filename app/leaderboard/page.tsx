@@ -63,10 +63,10 @@ export default async function LeaderboardPage() {
 
                 {/* Podium Section */}
                 {topThree.length > 0 && (
-                    <div className="flex flex-col md:flex-row items-end justify-center gap-4 md:gap-2 pt-10 pb-4 animate-in fade-in zoom-in-95 duration-1000">
+                    <div className="flex flex-row items-end justify-center gap-1 md:gap-4 pt-10 pb-4 animate-in fade-in zoom-in-95 duration-1000 w-full overflow-hidden">
                         {/* 2nd Place */}
                         {topThree[1] && (
-                            <div className="order-2 md:order-1 flex-1 w-full max-w-[200px]">
+                            <div className="order-1 flex-1 min-w-0 max-w-[180px]">
                                 <PodiumCard
                                     user={topThree[1]}
                                     rank={2}
@@ -77,7 +77,7 @@ export default async function LeaderboardPage() {
                         )}
                         {/* 1st Place */}
                         {topThree[0] && (
-                            <div className="order-1 md:order-2 flex-1 w-full max-w-[240px]">
+                            <div className="order-2 flex-1 min-w-0 max-w-[200px]">
                                 <PodiumCard
                                     user={topThree[0]}
                                     rank={1}
@@ -88,7 +88,7 @@ export default async function LeaderboardPage() {
                         )}
                         {/* 3rd Place */}
                         {topThree[2] && (
-                            <div className="order-3 md:order-3 flex-1 w-full max-w-[200px]">
+                            <div className="order-3 flex-1 min-w-0 max-w-[180px]">
                                 <PodiumCard
                                     user={topThree[2]}
                                     rank={3}
@@ -160,11 +160,12 @@ export default async function LeaderboardPage() {
                             </div>
                             <div>
                                 <h4 className="font-black text-destructive tracking-tight">MAGI PARA ALERT!</h4>
-                                <p className="text-sm text-muted-foreground">The bottom 2 users are getting dangerously close to magic territory. Fix up!</p>
+                                <p className="text-sm text-muted-foreground">The last 2 persons are in magi para. Fix up!</p>
                             </div>
                         </div>
                     </div>
                 )}
+
             </div>
         </main>
     );
@@ -191,19 +192,19 @@ function PodiumCard({ user, rank, isCurrentUser, isMagiPara }: { user: any; rank
                     )}
                 </div>
 
-                <div className={`w-full ${configs.height} glass rounded-t-3xl border-b-0 p-4 text-center flex flex-col justify-between shadow-2xl shadow-primary/5 transition-all group-hover:bg-primary/5 ${isMagiPara ? 'bg-destructive/5 border-destructive/20' : ''}`}>
+                <div className={`w-full ${configs.height} glass rounded-t-3xl border border-primary/20 border-b-0 p-4 text-center flex flex-col justify-between shadow-2xl shadow-primary/5 transition-all group-hover:bg-primary/5 ${isMagiPara ? 'bg-destructive/5 border-destructive/20' : ''}`}>
                     <div className="space-y-1">
-                        <p className={`font-black uppercase tracking-tighter text-2xl ${configs.text}`}>{rank}{rank === 1 ? 'ST' : rank === 2 ? 'ND' : 'RD'}</p>
-                        <p className="font-bold truncate text-sm px-2">{user.full_name}</p>
+                        <p className={`font-black uppercase tracking-tighter text-lg md:text-2xl ${configs.text}`}>{rank}{rank === 1 ? 'ST' : rank === 2 ? 'ND' : 'RD'}</p>
+                        <p className="font-bold truncate text-[10px] md:text-sm px-1">{user.full_name}</p>
                         {isMagiPara && (
-                            <Badge variant="destructive" className="h-4 text-[8px] gap-1 px-1">
+                            <Badge variant="destructive" className="h-3 md:h-4 text-[6px] md:text-[8px] gap-1 px-1">
                                 <Flame className="w-2 h-2" /> MAGI PARA
                             </Badge>
                         )}
                     </div>
                     <div className="space-y-0.5">
-                        <p className="text-3xl font-black tracking-tight">{user.points}</p>
-                        <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest leading-none">Pts</p>
+                        <p className="text-xl md:text-3xl font-black tracking-tight">{user.points}</p>
+                        <p className="text-[8px] md:text-[10px] font-bold text-muted-foreground uppercase tracking-widest leading-none">Pts</p>
                     </div>
                 </div>
             </div>

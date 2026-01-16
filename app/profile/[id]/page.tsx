@@ -153,7 +153,11 @@ export default async function ProfilePage({
                                             })}
                                         </p>
                                         <p className="text-xs text-muted-foreground italic">
-                                            Check-in at {new Date(record.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                            Check-in at {new Date(record.created_at).toLocaleTimeString('en-US', {
+                                                hour: '2-digit',
+                                                minute: '2-digit',
+                                                timeZone: 'Asia/Dhaka'
+                                            })}
                                         </p>
                                     </div>
                                 </div>

@@ -13,7 +13,7 @@ import {
     DialogTitle,
     DialogTrigger,
 } from "@/components/ui/dialog";
-import { Camera, Upload } from "lucide-react";
+import { Camera, Upload, RefreshCw } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 interface AttendanceButtonProps {
@@ -31,8 +31,9 @@ export function AttendanceButton({ userId }: AttendanceButtonProps) {
     const videoRef = useRef<HTMLVideoElement>(null);
     const [stream, setStream] = useState<MediaStream | null>(null);
 
-    const [cameraAvailable, setCameraAvailable] = useState(true);
+    const [cameraAvailable, setCameraAvailable] = useState(false);
     const [isCameraReady, setIsCameraReady] = useState(false);
+    const [facingMode, setFacingMode] = useState<"user" | "environment">("user");
 
     const checkCameraSupport = () => {
         const isHTTPS = window.location.protocol === "https:";
@@ -64,9 +65,9 @@ export function AttendanceButton({ userId }: AttendanceButtonProps) {
                 return;
             }
 
-            // Try user-facing camera first
+            // Use current facingMode
             let constraints: MediaStreamConstraints = {
-                video: { facingMode: "user" },
+                video: { facingMode: facingMode },
             };
 
             try {
@@ -111,6 +112,15 @@ export function AttendanceButton({ userId }: AttendanceButtonProps) {
             setStream(null);
         }
         setIsCameraReady(false);
+    };
+
+    const switchCamera = async () => {
+        const newMode = facingMode === "user" ? "environment" : "user";
+        stopCamera();
+        setFacingMode(newMode);
+        // Wait for state to update, then restart happens via useEffect if we had one, 
+        // but here we call it manually after a small delay to ensure cleanup
+        setTimeout(() => startCamera(), 100);
     };
 
     const capturePhoto = () => {
@@ -173,7 +183,14 @@ export function AttendanceButton({ userId }: AttendanceButtonProps) {
         const supabase = createClient();
 
         try {
-            const today = new Date().toISOString().split("T")[0];
+            // Get today's date in BDT (Asia/Dhaka)
+            const today = new Intl.DateTimeFormat('en-CA', {
+                timeZone: 'Asia/Dhaka',
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit',
+            }).format(new Date());
+
             const { data: existing } = await supabase
                 .from("attendance")
                 .select("id")
@@ -337,6 +354,18 @@ export function AttendanceButton({ userId }: AttendanceButtonProps) {
                                         <div className="w-8 h-8 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
                                         <p className="text-xs font-medium text-white/80 animate-pulse">Initializing Camera...</p>
                                     </div>
+                                )}
+                                {isCameraReady && (
+                                    <Button
+                                        type="button"
+                                        variant="secondary"
+                                        size="icon"
+                                        className="absolute top-2 right-2 rounded-full bg-black/50 hover:bg-black/70 border-none text-white h-10 w-10 shadow-lg backdrop-blur-sm transition-all"
+                                        onClick={switchCamera}
+                                        title="Switch Camera"
+                                    >
+                                        <RefreshCw className="h-5 w-5" />
+                                    </Button>
                                 )}
                             </div>
                             <Button
