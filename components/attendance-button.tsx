@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import confetti from "canvas-confetti";
@@ -32,6 +32,7 @@ export function AttendanceButton({ userId }: AttendanceButtonProps) {
     const [stream, setStream] = useState<MediaStream | null>(null);
 
     const [cameraAvailable, setCameraAvailable] = useState(true);
+    const [isCameraReady, setIsCameraReady] = useState(false);
 
     const checkCameraSupport = () => {
         const isHTTPS = window.location.protocol === "https:";
@@ -72,9 +73,6 @@ export function AttendanceButton({ userId }: AttendanceButtonProps) {
                 const mediaStream = await navigator.mediaDevices.getUserMedia(constraints);
                 setStream(mediaStream);
                 setError(null);
-                if (videoRef.current) {
-                    videoRef.current.srcObject = mediaStream;
-                }
             } catch (err: any) {
                 // If user camera fails, try any available camera (fallback for some devices)
                 console.warn("Front camera failed, trying fallback:", err);
@@ -83,9 +81,6 @@ export function AttendanceButton({ userId }: AttendanceButtonProps) {
                 });
                 setStream(mediaStream);
                 setError(null);
-                if (videoRef.current) {
-                    videoRef.current.srcObject = mediaStream;
-                }
             }
         } catch (err: any) {
             console.error("Camera error:", err);
@@ -106,6 +101,7 @@ export function AttendanceButton({ userId }: AttendanceButtonProps) {
             }
 
             setError(errorMessage);
+            setIsCameraReady(false);
         }
     };
 
@@ -114,6 +110,7 @@ export function AttendanceButton({ userId }: AttendanceButtonProps) {
             stream.getTracks().forEach((track) => track.stop());
             setStream(null);
         }
+        setIsCameraReady(false);
     };
 
     const capturePhoto = () => {
@@ -122,7 +119,7 @@ export function AttendanceButton({ userId }: AttendanceButtonProps) {
             return;
         }
 
-        if (videoRef.current.videoWidth === 0 || videoRef.current.videoHeight === 0) {
+        if (!isCameraReady) {
             setError("Camera is still loading. Please wait a moment.");
             return;
         }
@@ -260,6 +257,13 @@ export function AttendanceButton({ userId }: AttendanceButtonProps) {
         }
     });
 
+    // Fix: Move srcObject assignment to useEffect to handle race condition
+    useEffect(() => {
+        if (stream && videoRef.current) {
+            videoRef.current.srcObject = stream;
+        }
+    }, [stream]);
+
     return (
         <Dialog open={open} onOpenChange={(isOpen) => (isOpen ? setOpen(true) : handleClose())}>
             <DialogTrigger asChild>
@@ -318,19 +322,35 @@ export function AttendanceButton({ userId }: AttendanceButtonProps) {
                     )}
 
                     {stream && !preview && (
-                        <div className="space-y-2">
-                            <video
-                                ref={videoRef}
-                                autoPlay
-                                playsInline
-                                muted
-                                className="w-full rounded-md max-h-[40vh] object-contain bg-black"
-                            />
-                            <Button type="button" onClick={capturePhoto} className="w-full">
+                        <div className="space-y-2 relative group mt-2">
+                            <div className="relative overflow-hidden rounded-xl bg-black aspect-video flex items-center justify-center">
+                                <video
+                                    ref={videoRef}
+                                    autoPlay
+                                    playsInline
+                                    muted
+                                    onLoadedMetadata={() => setIsCameraReady(true)}
+                                    className={`w-full h-full object-cover transition-opacity duration-500 ${isCameraReady ? 'opacity-100' : 'opacity-0'}`}
+                                />
+                                {!isCameraReady && (
+                                    <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-black/40 backdrop-blur-sm">
+                                        <div className="w-8 h-8 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
+                                        <p className="text-xs font-medium text-white/80 animate-pulse">Initializing Camera...</p>
+                                    </div>
+                                )}
+                            </div>
+                            <Button
+                                type="button"
+                                onClick={capturePhoto}
+                                className="w-full h-12 text-base font-bold shadow-lg shadow-primary/20"
+                                disabled={!isCameraReady}
+                            >
+                                <Camera className="mr-2 h-5 w-5" />
                                 Capture Photo
                             </Button>
                         </div>
                     )}
+
 
                     {preview && (
                         <div className="space-y-2">
